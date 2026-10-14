@@ -2,7 +2,7 @@
 
 不用登入的匿名聊天室。設計與架構見 `docs/architecture.md` 與 `docs/design.md`。
 
-目前是**階段一**：只有前端，資料來源是瀏覽器內的「模擬服務」，還沒有接 Supabase。
+目前是**階段二**：已接上 Supabase。資料來源用 `VITE_CHAT_BACKEND` 切換：`supabase`（真正的後端）或 `mock`（階段一的模擬服務，不需要任何金鑰）。Supabase 的設定紀錄在 `supabase/setup.sql`。
 
 ## 指令
 
