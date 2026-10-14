@@ -26,11 +26,11 @@ export function LeaveDialog({ onStay, onLeave }: Props) {
         <h2 id="leave-title">要離開聊天室嗎？</h2>
         <p id="leave-desc">離開後，記住的代號會被清掉，下次需要重新輸入。</p>
         <div class="dialog-actions">
-          <button type="button" class="btn btn-primary" ref={stayRef} onClick={onStay}>
+          <button type="button" class="btn btn-primary" data-testid="leave-cancel" ref={stayRef} onClick={onStay}>
             留下來
           </button>
-          <button type="button" class="btn btn-secondary" onClick={onLeave}>
-            離開
+          <button type="button" class="btn btn-secondary" data-testid="leave-confirm" onClick={onLeave}>
+            確定離開
           </button>
         </div>
       </div>

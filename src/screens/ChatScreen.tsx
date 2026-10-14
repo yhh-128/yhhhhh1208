@@ -26,16 +26,37 @@ export function ChatScreen({ self, items, users, connection, onSend, onLeave }: 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const panelRef = useRef<HTMLElement>(null);
 
+  const cooldownTimer = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+
   const showToast = (text: string) => {
+    clearInterval(cooldownTimer.current);
     setToast(text);
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2500);
   };
 
+  /** 送太快：顯示倒數，輸入框裡的文字保留；冷卻結束時提示「可以再送出了」。 */
+  const showCooldown = () => {
+    clearInterval(cooldownTimer.current);
+    clearTimeout(toastTimer.current);
+    const tick = () => {
+      const remain = Math.ceil((SEND_INTERVAL_MS - (Date.now() - lastSentAt.current)) / 1000);
+      if (remain > 0) {
+        setToast(`送太快了，請稍等 ${remain} 秒`);
+        return;
+      }
+      clearInterval(cooldownTimer.current);
+      setToast('可以再送出了');
+      toastTimer.current = setTimeout(() => setToast(null), 1800);
+    };
+    tick();
+    cooldownTimer.current = setInterval(tick, 250);
+  };
+
   const handleSend = async (text: string): Promise<boolean> => {
     // 前端先擋一次（階段二時 Supabase 端會再擋一次）
     if (Date.now() - lastSentAt.current < SEND_INTERVAL_MS) {
-      showToast('送太快了，請稍等');
+      showCooldown();
       return false;
     }
     const result = await onSend(text);
@@ -43,8 +64,10 @@ export function ChatScreen({ self, items, users, connection, onSend, onLeave }: 
       lastSentAt.current = Date.now();
       return true;
     }
-    if (result.reason === 'rate_limited') showToast('送太快了，請稍等');
-    else if (result.reason === 'offline') showToast('目前離線，暫時無法送出');
+    if (result.reason === 'rate_limited') {
+      lastSentAt.current = Date.now(); // 伺服器說太快，就從現在重新計算冷卻
+      showCooldown();
+    } else if (result.reason === 'offline') showToast('目前離線，暫時無法送出');
     else showToast('這則訊息無法送出');
     return false;
   };
@@ -61,7 +84,13 @@ export function ChatScreen({ self, items, users, connection, onSend, onLeave }: 
     return () => document.removeEventListener('keydown', onKey);
   }, [panelOpen, closePanel]);
 
-  useEffect(() => () => clearTimeout(toastTimer.current), []);
+  useEffect(
+    () => () => {
+      clearTimeout(toastTimer.current);
+      clearInterval(cooldownTimer.current);
+    },
+    [],
+  );
 
   return (
     <div class="chat">
@@ -84,7 +113,7 @@ export function ChatScreen({ self, items, users, connection, onSend, onLeave }: 
             {users.length} 人在線
             {panelOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
           </button>
-          <button type="button" class={leaveOpen ? 'leave-btn is-active' : 'leave-btn'} onClick={() => setLeaveOpen(true)}>
+          <button type="button" class={leaveOpen ? 'leave-btn is-active' : 'leave-btn'} data-testid="leave-button" onClick={() => setLeaveOpen(true)}>
             <LeaveIcon />
             離開
           </button>

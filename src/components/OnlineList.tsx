@@ -8,7 +8,7 @@ type Props = { users: OnlineUser[]; self: string };
 export function OnlineList({ users, self }: Props) {
   const selfKey = nicknameKey(self);
   return (
-    <ul class="online-list">
+    <ul class="online-list" data-testid="online-list">
       {users.map((u) => {
         const isSelf = nicknameKey(u.nickname) === selfKey;
         return (

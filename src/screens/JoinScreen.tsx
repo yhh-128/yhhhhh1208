@@ -68,6 +68,7 @@ export function JoinScreen({ initialNickname, error, lostNickname, busy, onSubmi
         </div>
         <input
           id="nickname"
+          data-testid="nickname-input"
           ref={inputRef}
           class={error ? 'join-input has-error' : 'join-input'}
           type="text"
@@ -82,12 +83,12 @@ export function JoinScreen({ initialNickname, error, lostNickname, busy, onSubmi
           onInput={(e) => setValue(clipChars((e.target as HTMLInputElement).value, NICKNAME_MAX))}
         />
         {error && (
-          <p class="field-error" id="nickname-error" role="alert">
+          <p class="field-error" id="nickname-error" role="alert" data-testid="join-error">
             <AlertIcon />
             {error}
           </p>
         )}
-        <button type="submit" class="btn btn-primary btn-lg" disabled={busy}>
+        <button type="submit" class="btn btn-primary btn-lg" data-testid="join-button" disabled={busy}>
           {busy ? '進入中…' : '進入聊天室'}
         </button>
         <p class="join-hint">

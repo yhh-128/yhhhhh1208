@@ -61,7 +61,7 @@ export function MessageList({ items, self, toast }: Props) {
 
   return (
     <div class="list-wrap">
-      <div class="message-list" ref={scrollRef} onScroll={onScroll}>
+      <div class="message-list" data-testid="message-list" ref={scrollRef} onScroll={onScroll}>
         {!hasMessages && (
           <div class="empty">
             <div class="empty-icon">
@@ -74,7 +74,7 @@ export function MessageList({ items, self, toast }: Props) {
         {items.map((item) => {
           if (item.kind === 'system') {
             return (
-              <div class="system-note" key={item.key}>
+              <div class="system-note" data-testid="system-note" key={item.key}>
                 {item.nickname} {item.type === 'join' ? '進入了聊天室' : '離開了聊天室'}
               </div>
             );
@@ -82,7 +82,7 @@ export function MessageList({ items, self, toast }: Props) {
           const m = item.message;
           const mine = nicknameKey(m.nickname) === selfKey;
           return (
-            <div class={mine ? 'msg msg-self' : 'msg msg-other'} key={item.key}>
+            <div class={mine ? 'msg msg-self' : 'msg msg-other'} data-testid="message" key={item.key}>
               {!mine && <span class="msg-name">{m.nickname}</span>}
               <div class="msg-row">
                 {mine && <time class="msg-time">{formatTime(m.created_at)}</time>}

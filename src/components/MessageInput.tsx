@@ -51,6 +51,7 @@ export function MessageInput({ disabled, onSend }: Props) {
           ref={ref}
           class="input-text"
           aria-label="訊息"
+          data-testid="message-input"
           rows={1}
           disabled={disabled}
           placeholder={disabled ? '連線中，暫時無法送出' : isTouch() ? '輸入訊息…' : '輸入訊息，Enter 送出，Shift+Enter 換行'}
@@ -71,7 +72,7 @@ export function MessageInput({ disabled, onSend }: Props) {
         />
         {remaining <= REMAINING_WARN && <span class="remaining">剩 {remaining} 字</span>}
       </div>
-      <button type="submit" class="send-btn" aria-label="送出" disabled={!canSend}>
+      <button type="submit" class="send-btn" aria-label="送出" data-testid="send-button" disabled={!canSend}>
         <SendIcon />
         <span class="send-label" aria-hidden="true">送出</span>
       </button>
