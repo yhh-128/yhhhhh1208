@@ -13,6 +13,7 @@ export function MessageList({ items, self, toast }: Props) {
   const prevLen = useRef(0);
   const [showNew, setShowNew] = useState(false);
   const selfKey = nicknameKey(self);
+  const hasMessages = items.some((i) => i.kind === 'message');
 
   const scrollToBottom = () => {
     const el = scrollRef.current;
@@ -61,7 +62,7 @@ export function MessageList({ items, self, toast }: Props) {
   return (
     <div class="list-wrap">
       <div class="message-list" ref={scrollRef} onScroll={onScroll}>
-        {items.length === 0 ? (
+        {!hasMessages && (
           <div class="empty">
             <div class="empty-icon">
               <ChatSmileIcon size={48} />
@@ -69,29 +70,28 @@ export function MessageList({ items, self, toast }: Props) {
             <p class="empty-title">還沒有人說話</p>
             <p class="empty-sub">來打聲招呼吧</p>
           </div>
-        ) : (
-          items.map((item) => {
-            if (item.kind === 'system') {
-              return (
-                <div class="system-note" key={item.key}>
-                  {item.nickname} {item.type === 'join' ? '進入了聊天室' : '離開了聊天室'}
-                </div>
-              );
-            }
-            const m = item.message;
-            const mine = nicknameKey(m.nickname) === selfKey;
+        )}
+        {items.map((item) => {
+          if (item.kind === 'system') {
             return (
-              <div class={mine ? 'msg msg-self' : 'msg msg-other'} key={item.key}>
-                {!mine && <span class="msg-name">{m.nickname}</span>}
-                <div class="msg-row">
-                  {mine && <time class="msg-time">{formatTime(m.created_at)}</time>}
-                  <div class="bubble">{m.content}</div>
-                  {!mine && <time class="msg-time">{formatTime(m.created_at)}</time>}
-                </div>
+              <div class="system-note" key={item.key}>
+                {item.nickname} {item.type === 'join' ? '進入了聊天室' : '離開了聊天室'}
               </div>
             );
-          })
-        )}
+          }
+          const m = item.message;
+          const mine = nicknameKey(m.nickname) === selfKey;
+          return (
+            <div class={mine ? 'msg msg-self' : 'msg msg-other'} key={item.key}>
+              {!mine && <span class="msg-name">{m.nickname}</span>}
+              <div class="msg-row">
+                {mine && <time class="msg-time">{formatTime(m.created_at)}</time>}
+                <div class="bubble">{m.content}</div>
+                {!mine && <time class="msg-time">{formatTime(m.created_at)}</time>}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <div class="floaters">

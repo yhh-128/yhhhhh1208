@@ -66,14 +66,10 @@ export class SupabaseChatService implements ChatService {
     });
 
     window.addEventListener('offline', () => this.markReconnecting());
-    window.addEventListener('online', () => {
-      this.client.realtime.connect();
-      // 連線如果其實沒有斷，supabase-js 不會再通知一次「已連上」，所以自己主動確認並補訊息
-      if (this.ready && !this.connected) setTimeout(() => void this.recover(), 500);
-    });
+    window.addEventListener('online', () => this.resume());
+    // 手機從背景回到前景時：確認連線、補上錯過的訊息
     document.addEventListener('visibilitychange', () => {
-      // 手機從背景回來時，主動補一次錯過的訊息
-      if (!document.hidden && this.ready && this.connected) void this.backfill();
+      if (!document.hidden) this.resume();
     });
   }
 
@@ -248,6 +244,20 @@ export class SupabaseChatService implements ChatService {
     if (!this.ready || !this.connected) return;
     this.connected = false;
     this.emitter.emit('connection_changed', 'reconnecting');
+  }
+
+  /** 網路恢復、或手機回到前景時：確認連線還活著，沒有就重連，並補上錯過的訊息。 */
+  private resume() {
+    if (!this.ready) return;
+    this.client.realtime.connect();
+    // 連線表面上正常、其實頻道已經掉了（手機被系統在背景中斷）時，也當成斷線處理
+    if (this.connected && this.channel?.state !== 'joined') this.markReconnecting();
+    if (this.connected) {
+      void this.backfill().catch(() => {});
+    } else {
+      // supabase-js 若沒有再通知一次「已連上」，就自己主動確認
+      setTimeout(() => void this.recover(), 500);
+    }
   }
 
   /** 連線恢復後：重新登記在線、確認代號還是自己的、補上漏掉的訊息。 */
